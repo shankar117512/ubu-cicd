@@ -1,23 +1,127 @@
-# production.yml
-cat > .github/workflows/production.yml << 'EOF'
 name: Production CI/CD
-
+ 
 on:
   push:
     branches: [main]
-
+ 
 jobs:
-  deploy:
+  full-test-suite:
+    name: Complete Test Suite
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env: { POSTGRES_DB: test_db, POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres }
+        options: --health-cmd pg_isready --health-interval 10s --health-retries 5
+        ports: ['5432:5432']
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - run: pip install -r requirements/production.txt
-      - run: pytest
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11', cache: pip }
+      - run: pip install -r requirements/development.txt
+      - name: Full test suite
         env:
-          DJANGO_SETTINGS_MODULE: myproject.settings.production
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      # Add your production deploy step here
-EOF
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+          SECRET_KEY: test-secret-key-for-ci
+          ALLOWED_HOSTS: localhost
+          DJANGO_SETTINGS_MODULE: myproject.settings.development
+        run: pytest --cov=. --cov-fail-under=85 -v
+ 
+  build-production-image:
+    name: Build Production Image
+    needs: full-test-suite
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with: { username: ${{ secrets.DOCKER_USERNAME }}, password: ${{ secrets.DOCKER_PASSWORD }} }
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/myproject
+          tags: |
+            type=sha,prefix=prod-
+            type=raw,value=latest
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: production
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myproject:latest
+          cache-to: type=inline
+ 
+  deploy-production:
+    name: Deploy to Production
+    needs: build-production-image
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://yourdomain.com
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl -fsSL https://railway.app/install.sh | sh
+ 
+      - name: Capture pre-deploy state for rollback
+        id: pre_deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          DEPLOY_ID=$(railway deployments \
+            --service ${{ secrets.RAILWAY_PROD_SERVICE_ID }} \
+            --environment production --json | jq -r '.[0].id')
+          echo "prev_deploy_id=$DEPLOY_ID" >> $GITHUB_OUTPUT
+ 
+      - name: Deploy to Production
+        id: deploy_step
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway environment use production
+          railway up --service ${{ secrets.RAILWAY_PROD_SERVICE_ID }}
+ 
+      - name: Health check with retry
+        id: health_check
+        run: |
+          MAX_RETRIES=12
+          for i in $(seq 1 $MAX_RETRIES); do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' https://yourdomain.com/health/)
+            if [ $STATUS = '200' ]; then
+              echo 'Health check passed after attempt '$i
+              exit 0
+            fi
+            echo 'Attempt '$i'/'$MAX_RETRIES' failed (HTTP '$STATUS'), waiting 15s...'
+            sleep 15
+          done
+          echo 'Health check failed after all retries'
+          exit 1
+ 
+      - name: Auto rollback on health check failure
+        if: failure() && steps.deploy_step.outcome == 'success'
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo 'Production health check FAILED! Rolling back...'
+          railway deployments rollback \
+            ${{ steps.pre_deploy.outputs.prev_deploy_id }} \
+            --service ${{ secrets.RAILWAY_PROD_SERVICE_ID }}
+          echo 'Rollback completed'
+ 
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: '{"text": "Production deploy SUCCESS — commit: ${{ github.sha }} by ${{ github.actor }}"}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+ 
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: '{"text": "PRODUCTION DEPLOY FAILED and rolled back — ${{ github.sha }} by ${{ github.actor }}"}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
