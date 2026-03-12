@@ -1,0 +1,22 @@
+# dev.yml
+cat > .github/workflows/dev.yml << 'EOF'
+name: Dev CI
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements/development.txt
+      - run: pytest --cov
+        env:
+          DJANGO_SETTINGS_MODULE: myproject.settings.development
+          SECRET_KEY: test-secret-key
+EOF

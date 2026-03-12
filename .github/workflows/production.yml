@@ -1,0 +1,23 @@
+# production.yml
+cat > .github/workflows/production.yml << 'EOF'
+name: Production CI/CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements/production.txt
+      - run: pytest
+        env:
+          DJANGO_SETTINGS_MODULE: myproject.settings.production
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      # Add your production deploy step here
+EOF

@@ -1,0 +1,23 @@
+# staging.yml
+cat > .github/workflows/staging.yml << 'EOF'
+name: Staging CI/CD
+
+on:
+  push:
+    branches: [staging]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements/staging.txt
+      - run: pytest
+        env:
+          DJANGO_SETTINGS_MODULE: myproject.settings.staging
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      # Add your staging deploy step here
+EOF
