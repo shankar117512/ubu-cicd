@@ -9,4 +9,4 @@ COPY . .
 
 ENV PYTHONUNBUFFERED=1
 
-CMD sh -c "python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:8000"
+CMD gunicorn myproject.wsgi:application --bind 0.0.0.0:8000
