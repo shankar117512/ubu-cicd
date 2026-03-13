@@ -2,7 +2,12 @@ from .base import *
  
 DEBUG = False
 ENVIRONMENT = 'production'
- 
+
+ALLOWED_HOSTS = ["*"]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+
 SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
