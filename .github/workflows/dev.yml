@@ -12,6 +12,10 @@ env:
  
 jobs:
   lint:
+   - name: Run flake8
+     run: |
+       source venv/bin/activate
+       flake8 myproject
     name: Lint and Format Check
     runs-on: ubuntu-latest
     steps:
