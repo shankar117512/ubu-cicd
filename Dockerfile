@@ -33,6 +33,4 @@ RUN python manage.py collectstatic --noinput \
     --settings=myproject.settings.production
  
 USER django
-CMD ["gunicorn", "myproject.wsgi:application",
-     "--bind", "0.0.0.0:$PORT", "--workers", "3", "--timeout", "120",
-     "--access-logfile", "-"]
+CMD ["gunicorn","myproject.wsgi:application","--bind","0.0.0.0:$PORT","--workers","3","--timeout","120","--access-logfile","-"]
