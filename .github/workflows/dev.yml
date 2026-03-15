@@ -101,10 +101,10 @@ jobs:
 
       - name: Deploy
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_DEV }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           railway environment development
-          railway up --service ${{ secrets.RAILWAY_DEV_SERVICE_ID }} --detach
+          railway up --service *** --detach
 
       - name: Smoke test
         run: |
