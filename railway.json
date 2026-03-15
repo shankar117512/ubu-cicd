@@ -7,7 +7,7 @@
   },
   "deploy": {
     "numReplicas": 1,
-    "startCommand": "gunicorn myproject.wsgi:application --bind 0.0.0.0:$PORT --workers 3",
+    "startCommand": "gunicorn myproject.wsgi:application --bind 0.0.0.0:8000",
     "healthcheckPath": "/health/",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
