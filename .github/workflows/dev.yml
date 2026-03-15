@@ -100,11 +100,12 @@ jobs:
         run: curl -fsSL https://railway.app/install.sh | sh
 
       - name: Deploy
+        run: railway whoami
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           railway environment development
-          railway up --service *** --detach
+          railway up --detach
 
       - name: Smoke test
         run: |
