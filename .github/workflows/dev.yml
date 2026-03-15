@@ -105,11 +105,15 @@ jobs:
         run: |
           railway whoami
           railway environment development
-          railway up --detach
+          railway up --service ${{ secrets.RAILWAY_DEV_SERVICE_ID }} --detach
 
       - name: Smoke test
         run: |
-          sleep 30
-          STATUS=$(curl -s -o /dev/null -w '%{http_code}' \
-            https://ubu-cicd-development.up.railway.app/health/)
-          [ $STATUS = '200' ] && echo 'Smoke test passed!' || exit 1
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://ubu-cicd-development.up.railway.app/health/)
+
+        if [ "$STATUS" = "200" ]; then
+          echo "Smoke test passed!"
+        else
+          echo "Smoke test failed!"
+          exit 1
+        fi
