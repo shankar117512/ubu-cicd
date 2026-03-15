@@ -1,8 +1,7 @@
-import pytest
-from django.urls import reverse
+from django.test import Client
 
 
-@pytest.mark.django_db
-def test_health_endpoint(client):
+def test_health_endpoint():
+    client = Client()
     response = client.get("/health/")
     assert response.status_code == 200
