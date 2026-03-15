@@ -115,4 +115,4 @@ jobs:
           else
             echo "Smoke test failed!"
             exit 1
-          f1
+          fi
