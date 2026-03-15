@@ -1,5 +1,4 @@
-from .base import INSTALLED_APPS, MIDDLEWARE, BASE_DIR
- 
+from .base import *
 DEBUG = True
 ENVIRONMENT = 'development'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -13,4 +12,3 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
 ]
-
