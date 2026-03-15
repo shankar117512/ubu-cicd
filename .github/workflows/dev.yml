@@ -101,7 +101,7 @@ jobs:
 
       - name: Deploy
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_DEV }}
         run: |
           railway environment development
           railway up --service ${{ secrets.RAILWAY_DEV_SERVICE_ID }} --detach
@@ -110,5 +110,5 @@ jobs:
         run: |
           sleep 30
           STATUS=$(curl -s -o /dev/null -w '%{http_code}' \
-            https://dev.yourdomain.railway.app/health/)
+            https://ubu-cicd-development.up.railway.app/health/)
           [ $STATUS = '200' ] && echo 'Smoke test passed!' || exit 1
