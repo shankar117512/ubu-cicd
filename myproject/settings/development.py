@@ -1,3 +1,4 @@
+import sys
 from .base import *
 
 DEBUG = True
@@ -13,3 +14,11 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
 ]
+
+if "pytest" in sys.modules:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    }

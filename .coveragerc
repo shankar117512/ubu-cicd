@@ -1,0 +1,6 @@
+[run]
+omit =
+    */migrations/*
+    */venv/*
+    myproject/settings/production.py
+    myproject/settings/staging.py
