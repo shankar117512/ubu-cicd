@@ -103,7 +103,7 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway environment use development
+          railway environment development
           railway up --service ${{ secrets.RAILWAY_DEV_SERVICE_ID }} --detach
 
       - name: Smoke test
