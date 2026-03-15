@@ -3,7 +3,7 @@ from .base import *
 from decouple import config
 
 DEBUG = False
-ENVIRONMENT = 'production'
+ENVIRONMENT = "production"
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")
 STATIC_ROOT = BASE_DIR / "staticfiles"
 SECURE_SSL_REDIRECT = True
@@ -14,7 +14,7 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 sentry_sdk.init(
-    dsn=config('SENTRY_DSN', default=''),
-    environment='production',
+    dsn=config("SENTRY_DSN", default=""),
+    environment="production",
     traces_sample_rate=0.1,
 )

@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import path
@@ -28,7 +29,7 @@ def health(request):
 
 
 urlpatterns = [
-    path('', home),
-    path('health/', health),
-    path('admin/', admin.site.urls),
+    path("", home),
+    path("health/", health),
+    path("admin/", admin.site.urls),
 ]
