@@ -5,5 +5,5 @@ def home(request):
     return JsonResponse({"message": "Django CI/CD Deployment Successfully!"})
 
 
-def health_view(request):
+def health_check(request):
     return JsonResponse({"status": "ok"})
