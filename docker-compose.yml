@@ -3,14 +3,14 @@ services:
   web:
     build:
       context: .
-      target: development
+      target: staging1
     volumes:
       - .:/app
     ports:
       - '8000:8000'
-    env_file: .env.dev
+    env_file: .env.staging1
     environment:
-      - DJANGO_SETTINGS_MODULE=myproject.settings.development
+      - DJANGO_SETTINGS_MODULE=myproject.settings.staging1
     depends_on:
       db:
         condition: service_healthy
@@ -18,11 +18,11 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: myapp_dev
+      POSTGRES_DB: myapp_staging
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
+      - postgres_staging_data:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
@@ -35,4 +35,4 @@ services:
       - '6379:6379'
  
 volumes:
-  postgres_dev_data:
+  postgres_staging_data:
